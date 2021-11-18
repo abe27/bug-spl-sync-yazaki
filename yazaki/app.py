@@ -354,7 +354,7 @@ class Yazaki:
         return obj
 
     def get_gedi(self):
-        import os
+        import os, time
 
         cookies = self.__login()
         if cookies is False:
@@ -388,6 +388,7 @@ class Yazaki:
                     except:
                         pass
 
+                time.sleep(1.5)
                 i += 1
 
         self.__logout(cookies)
