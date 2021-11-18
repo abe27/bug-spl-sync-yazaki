@@ -574,4 +574,5 @@ $RECYCLE.BIN/
 
 logs/
 exports/
+data/*.db
 *.db
