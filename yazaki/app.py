@@ -322,7 +322,7 @@ class Yazaki:
                         if td.find("a") != None:
                             found = True
 
-                        if found is False:
+                        if found is True:
                             if len(docs) >= 9:
                                 l = ObjectLink(
                                     os.getenv("SERVICE_TYPE"),
@@ -392,3 +392,4 @@ class Yazaki:
                 i += 1
 
         self.__logout(cookies)
+        return doc

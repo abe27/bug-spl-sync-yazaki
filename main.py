@@ -1,4 +1,4 @@
-import pathlib, os, sys
+import pathlib, os, sys, sqlite3
 from yazaki.app import Yazaki
 
 from dotenv import load_dotenv
@@ -8,7 +8,7 @@ env_path = f"{app_path}/.env"
 load_dotenv(env_path)
 
 y = Yazaki()
-
+sql = sqlite3.connect("sync.db")
 
 def main():
     doc = y.get_gedi()
