@@ -31,11 +31,20 @@ def read():
             __oracon = cx_Oracle.connect(os.getenv("ORA_STR"))
             __oracur = __oracon.cursor()
             if r[1] == "CK":
+                __list_receive = []
                 plantype = doc[0]["plantype"]
                 if plantype == "RECEIVE":
                     __rec_etd = datetime.datetime.strptime(doc[0]["aetodt"], "%d/%m/%Y")
                     __rec_no = doc[0]["receivingkey"]
                     __rec_tag = doc[0]["tagrp"]
+                    __list_receive.append(
+                        {
+                            "factory": doc[0]["factory"],
+                            "receiveno": __rec_no,
+                            "receivedte": __rec_etd,
+                            "receivepln": len(doc),
+                        }
+                    )
 
                     ## check duplicate header
                     rec_check = __oracur.execute(
@@ -95,6 +104,14 @@ def read():
                         )
                         x += 1
 
+                    ### notifications
+                    if len(__list_receive) > 0:
+                        x = 0
+                        while x < len(__list_receive):
+                            _r = __list_receive[x]
+                            msg = f"""FACTORY: {_r['factory']}\nRECEIVENO: {r['receiveno']}\nITEM: {r['receivepln']} CTN: \nAT: """
+
+                            x += 1
                     __upsert = True
 
                 else:
