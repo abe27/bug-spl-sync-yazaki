@@ -24,28 +24,131 @@ def read():
     obj = cur.fetchall()
     i = 0
     while i < len(obj):
+        __upsert = False
         r = obj[i]
         doc = y.read_batch_file(r[1], r[11], os.path.join(r[13], r[5]))
         if len(doc) > 0:
-            print(os.getenv("ORA_STR"))
             __oracon = cx_Oracle.connect(os.getenv("ORA_STR"))
             __oracur = __oracon.cursor()
             if r[1] == "CK":
                 plantype = doc[0]["plantype"]
                 if plantype == "RECEIVE":
-                    ### create header
+                    __rec_etd = datetime.datetime.strptime(doc[0]["aetodt"], "%d/%m/%Y")
+                    __rec_no = doc[0]["receivingkey"]
+                    __rec_tag = doc[0]["tagrp"]
 
-                    ### create body
+                    ## check duplicate header
+                    rec_check = __oracur.execute(
+                        f"select RECEIVINGKEY from TXP_RECTRANSENT where RECEIVINGKEY='{__rec_no}'"
+                    )
 
-                    ### check part
+                    sql_insert_ent = f"""UPDATE TXP_RECTRANSENT SET RECEIVINGMAX='{len(doc)}',RECPLNCTN=0 WHERE RECEIVINGKEY='{__rec_no}'"""
+                    if rec_check.fetchone() is None:
+                        sql_insert_ent = f"""INSERT INTO TXP_RECTRANSENT(RECEIVINGKEY, RECEIVINGMAX, RECEIVINGDTE, VENDOR, RECSTATUS, RECISSTYPE, RECPLNCTN,RECENDCTN, UPDDTE, SYSDTE)
+                        VALUES('{__rec_no}', {len(doc)}, to_date('{str(__rec_etd)[:10]}', 'YYYY-MM-DD'), '{__rec_tag}', 0, '01', 0,0, current_timestamp, current_timestamp)"""
 
-                    print(f"RECEIVE")
+                    ### excute head
+                    __oracur.execute(
+                        f"""DELETE FROM SKTSYS.TXP_RECTRANSBODY WHERE RECEIVINGKEY='{__rec_no}'"""
+                    )
+                    __oracur.execute(sql_insert_ent)
+
+                if plantype == "RECEIVE":
+                    sumpln = 0
+                    x = 0
+                    while x < len(doc):
+                        p = doc[x]
+                        ### check part
+                        __part_sql = __oracur.execute(
+                            f"select partno from txp_part where partno='{p['partno']}'"
+                        )
+                        if __part_sql.fetchone() is None:
+                            __oracur.execute(
+                                f"""insert into txp_part (tagrp,partno,partname,upddte,sysdte)values('C','{p['partno']}','{p['partname']}',sysdate,sysdate)"""
+                            )
+
+                        else:
+                            __oracur.execute(
+                                f"""update txp_part set  partname='{p['partname']}',upddte=sysdate where partno='{p['partno']}'"""
+                            )
+                        ### create body
+                        __recebody = __oracur.execute(
+                            f"""SELECT PARTNO from TXP_RECTRANSBODY WHERE RECEIVINGKEY='{p['receivingkey']}' AND PARTNO='{p['partno']}'"""
+                        )
+                        if __recebody.fetchone() is None:
+                            rvno = __oracur.execute(
+                                f"(select 'BD'|| TO_CHAR(sysdate,'yyMMdd') || replace(to_char(emp_TXP__RCMANGENO_CK2.nextval,'00099'),' ','') as genrunno  from dual)"
+                            )
+                            rvno = rvno.fetchone()
+                            __part_desc = str(p["partname"]).replace("'", "''")
+                            __oracur.execute(
+                                f"""INSERT INTO TXP_RECTRANSBODY
+                                (RECEIVINGKEY, RECEIVINGSEQ, PARTNO, PLNQTY, PLNCTN,RECQTY,RECCTN,TAGRP, UNIT, CD, WHS, DESCRI, RVMANAGINGNO,UPDDTE, SYSDTE, CREATEDBY,MODIFIEDBY,OLDERKEY)
+                                VALUES('{__rec_no}', '{(x + 1)}', '{p['partno']}', {p['plnctn']}, {p['plnqty']},0,0,'C', '{p['unit']}','20' , '{__rec_tag}','{__part_desc}', '{rvno[0]}',sysdate, sysdate, 'SKTSYS', 'SKTSYS', '{__rec_no}')"""
+                            )
+
+                            print(f"{__rec_no} insert partno: {p['partno']}")
+
+                        sumpln = +int(p["plnctn"])
+                        __oracur.execute(
+                            f"""UPDATE TXP_RECTRANSENT SET RECEIVINGMAX='{len(doc)}',RECPLNCTN={sumpln} WHERE RECEIVINGKEY='{__rec_no}'"""
+                        )
+                        x += 1
+
+                    __upsert = True
 
                 else:
-                    print(f"ORDERPLAN")
+                    x = 0
+                    while x < len(doc):
+                        ord_id = doc[x]["uuid"]
+                        factory = doc[x]["factory"]
+                        orderid = doc[x]["orderid"]
+                        pono = doc[x]["pono"]
+                        biac = doc[x]["biac"]
+                        shiptype = doc[x]["shiptype"]
+                        etdtap = doc[x]["etdtap"]
+                        partno = doc[x]["partno"]
+                        partname = str(doc[x]["partname"]).replace("'", "''")
+                        pc = doc[x]["pc"]
+                        commercial = doc[x]["commercial"]
+                        sampleflg = doc[x]["sampleflg"]
+                        orderorgi = doc[x]["orderorgi"]
+                        orderround = doc[x]["orderround"]
+                        firmflg = doc[x]["firmflg"]
+                        shippedflg = doc[x]["shippedflg"]
+                        shippedqty = doc[x]["shippedqty"]
+                        ordermonth = doc[x]["ordermonth"]
+                        balqty = doc[x]["balqty"]
+                        bidrfl = doc[x]["bidrfl"]
+                        deleteflg = doc[x]["deleteflg"]
+                        ordertype = doc[x]["ordertype"]
+                        reasoncd = doc[x]["reasoncd"]
+                        carriercode = doc[x]["carriercode"]
+                        bioabt = doc[x]["bioabt"]
+                        bicomd = doc[x]["bicomd"]
+                        bistdp = doc[x]["bistdp"]
+                        binewt = doc[x]["binewt"]
+                        bigrwt = doc[x]["bigrwt"]
+                        bishpc = doc[x]["bishpc"]
+                        biivpx = doc[x]["biivpx"]
+                        bisafn = doc[x]["bisafn"]
+                        biwidt = doc[x]["biwidt"]
+                        bihigh = doc[x]["bihigh"]
+                        bileng = doc[x]["bileng"]
+                        lotno = doc[x]["lotno"]
+                        allocateqty = doc[x]["allocateqty"]
 
-                print(f"update gedi_files set download='1' where id='{r[0]}'")
+                        sql = f"""INSERT INTO TXP_ORDERPLAN(FACTORY, SHIPTYPE, AFFCODE, PONO, ETDTAP, PARTNO, PARTNAME, ORDERMONTH, ORDERORGI, ORDERROUND, BALQTY, SHIPPEDFLG, SHIPPEDQTY, PC, COMMERCIAL, SAMPFLG, CARRIERCODE, ORDERTYPE, UPDDTE, ALLOCATEQTY, BIDRFL, DELETEFLG, REASONCD, BIOABT, FIRMFLG, BICOMD, BISTDP, BINEWT, BIGRWT, BISHPC, BIIVPX, BISAFN, BILENG, BIWIDT, BIHIGH, CURINV, OLDINV, SYSDTE, POUPDFLAG, UUID, CREATEDBY, MODIFIEDBY, LOTNO, ORDERSTATUS, ORDERID, STATUS, ORDSYNC)
+                        VALUES('{factory}', '{shiptype}','{biac}', '{str(pono).strip()}', to_date('{str(etdtap)[:10]}', 'YYYY-MM-DD'), '{partno}', '{partname}', to_date('{str(ordermonth)[:10]}', 'YYYY-MM-DD'), '{orderorgi}', '{orderround}', '{balqty}', '{shippedflg}', '{shippedqty}', '{pc}', '{commercial}', '{sampleflg}', '{carriercode}', '{ordertype}', SYSDATE, '{allocateqty}', '{bidrfl}', '{deleteflg}', '{reasoncd}', '{bioabt}', '{firmflg}', '{bicomd}', '{bistdp}', '{binewt}', '{bigrwt}', '{bishpc}', '{biivpx}', '{bisafn}', '{bileng}', '{biwidt}', '{bihigh}', '', '', SYSDATE, '', '{ord_id}', 'SYS', 'SYS', '{lotno}', 0, '{str(orderid).strip()}', 1, 0)"""
+                        __oracur.execute(sql)
+                        x += 1
 
+                    __upsert = True
+
+            if __upsert:
+                cur.execute(f"update gedi_files set download='1' where id='{r[0]}'")
+
+            __oracon.commit()
             if __oracur:
                 __oracur.close()
 
@@ -54,6 +157,9 @@ def read():
 
             print(f"{i} ==> update download file {r[5]} set symc := 1")
         i += 1
+
+    cur.close()
+    conn.commit()
     conn.close()
 
 
@@ -106,7 +212,7 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
+    main()
     ### after get gedi file
     time.sleep(1)
     read()
