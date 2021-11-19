@@ -1,4 +1,11 @@
-import pathlib, os, sys, sqlite3, nanoid, time, datetime
+import pathlib
+import os
+import sys
+import sqlite3
+import nanoid
+import time
+import datetime
+import cx_Oracle
 from yazaki.app import Yazaki
 
 from dotenv import load_dotenv
@@ -18,9 +25,34 @@ def read():
     i = 0
     while i < len(obj):
         r = obj[i]
-        y.read_batch_file(r[1], r[11], os.path.join(r[13], r[5]))
-        print(f"update gedi_files set download='1' where id='{r[0]}'")
-        print(f"{i} ==> update download file {r[5]} set symc := 1")
+        doc = y.read_batch_file(r[1], r[11], os.path.join(r[13], r[5]))
+        if len(doc) > 0:
+            print(os.getenv("ORA_STR"))
+            __oracon = cx_Oracle.connect(os.getenv("ORA_STR"))
+            __oracur = __oracon.cursor()
+            if r[1] == "CK":
+                plantype = doc[0]["plantype"]
+                if plantype == "RECEIVE":
+                    ### create header
+
+                    ### create body
+
+                    ### check part
+
+                    print(f"RECEIVE")
+
+                else:
+                    print(f"ORDERPLAN")
+
+                print(f"update gedi_files set download='1' where id='{r[0]}'")
+
+            if __oracur:
+                __oracur.close()
+
+            if __oracon:
+                __oracon.close()
+
+            print(f"{i} ==> update download file {r[5]} set symc := 1")
         i += 1
     conn.close()
 
