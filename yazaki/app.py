@@ -71,6 +71,7 @@ class ObjectLink(object):
         self.factory = factory
         self.filetype = filetype
         self.download = download
+        self.destination = f'exports/{filetype}/{(self.currentdate).strftime("%Y%m%d")}'
         self.linkfile = f"https://{os.getenv('YAZAKI_HOST')}:{os.getenv('YAZAKI_PORT')}/cehttp/servlet/MailboxServlet?operation=DOWNLOAD&mailbox_id={self.mailbox}&batch_num={self.batchid}&data_format=A&batch_id={self.batchfile}"
 
 
@@ -240,7 +241,7 @@ class Yazaki:
         return True
 
     @staticmethod
-    def __get_text_file(session, objtype, filename, filelink):
+    def __get_text_file(i, session, objtype, filename, filelink):
         import requests
         from bs4 import BeautifulSoup
         from termcolor import colored
@@ -261,7 +262,7 @@ class Yazaki:
                     docs = BeautifulSoup(rq.content, "lxml")
                     print(
                         colored(
-                            f"download gedi {objtype} file : {(filename).upper()}",
+                            f"{i} download gedi {objtype} file : {(filename).upper()}",
                             "blue",
                         )
                     )
@@ -322,7 +323,7 @@ class Yazaki:
                         if td.find("a") != None:
                             found = True
 
-                        if found is True:
+                        if found is True:  ### False =debug,True=prod.
                             if len(docs) >= 9:
                                 l = ObjectLink(
                                     os.getenv("SERVICE_TYPE"),
@@ -366,16 +367,15 @@ class Yazaki:
             i = 0
             while i < len(doc):
                 r = doc[i]
-                txt = self.__get_text_file(cookies, r.filetype, r.batchfile, r.linkfile)
+                txt = self.__get_text_file(
+                    i, cookies, r.filetype, r.batchfile, r.linkfile
+                )
                 if txt != False:
                     ### check destination folder
-                    __destination = (
-                        f'exports/{r.filetype}/{(r.currentdate).strftime("%Y%m%d")}'
-                    )
-                    if os.path.exists(__destination) is False:
-                        os.makedirs(__destination)
+                    if os.path.exists(r.destination) is False:
+                        os.makedirs(r.destination)
 
-                    __filename = os.path.join(__destination, r.batchfile)
+                    __filename = os.path.join(r.destination, r.batchfile)
                     ### check duplicate file gedi. remove when exits.
                     if os.path.exists(__filename) == True:
                         os.remove(__filename)
@@ -388,8 +388,250 @@ class Yazaki:
                     except:
                         pass
 
-                time.sleep(1.5)
+                time.sleep(0.1)
                 i += 1
 
         self.__logout(cookies)
+        return doc
+
+    @staticmethod
+    def __trimtxt(txt):
+        return str(txt).lstrip().rstrip()
+
+    @staticmethod
+    def __checknamepart(fac, part):
+        p = str(part).lstrip().rstrip().replace(".", "")
+        partname = p
+        if fac == "AW":
+            try:
+                k = str(p[: p.index(" ")]).strip()
+                s = p[len(k) :]
+                ss = s.strip()
+                sn = str(ss[: ss.index(" ")]).strip()
+                ssize = str(ss[: ss.index(" ")])
+
+                if len(sn) > 1:
+                    ssize = str(f"{sn[:1]}.{sn[1:]}").strip()
+
+                c = str(p[(len(k) + len(ssize)) + 1 :]).strip()
+                partname = f"{k} {ssize} {c}"
+            except:
+                pass
+            finally:
+                pass
+
+        return partname
+
+    @staticmethod
+    def __restrip(txt):
+        return (txt).rstrip().lstrip()
+
+    @staticmethod
+    def __repartname(txt):
+        return (str(txt).replace("b", "")).replace("'", "")
+
+    @staticmethod
+    def __returnutfpono(self, txt):
+        return str(self.__repartname(txt)).strip()
+
+    @staticmethod
+    def read_receive(self, filename):
+        from datetime import datetime
+        import uuid
+
+        f = open(filename, "r", encoding="utf-8")
+        docs = []
+        for i in f:
+            fac = filename[filename.find("SPL") - 2 : filename.find("SPL") - 1]
+            uuidcode = str(uuid.uuid4())
+            plantype = "RECEIVE"
+            cd = 20
+            unit = "BOX"
+            recisstype = "01"
+            factory = "INJ"
+            if fac != "5":
+                factory = "AW"
+                plantype = "RECEIVE"
+                cd = 10
+                unit = "COIL"
+                recisstype = "01"
+
+            line = i
+            try:
+                docs.append(
+                    {
+                        "factory": factory,
+                        "faczone": str(line[4 : (4 + 3)]).lstrip().rstrip(),
+                        "receivingkey": str(line[4 : (4 + 12)]).lstrip().rstrip(),
+                        "partno": str(line[76 : (76 + 25)]).lstrip().rstrip(),
+                        "partname": str(line[101 : (101 + 25)]).lstrip().rstrip(),
+                        "vendor": factory,
+                        "cd": cd,
+                        "unit": unit,
+                        "whs": factory,
+                        "tagrp": "C",
+                        "recisstype": recisstype,
+                        "plantype": plantype,
+                        "recid": str(line[0:4]).lstrip().rstrip(),
+                        "aetono": str(line[4 : (4 + 12)]).lstrip().rstrip(),
+                        "aetodt": str(line[16 : (16 + 10)]).lstrip().rstrip(),
+                        "aetctn": float(str(line[26 : (26 + 9)]).lstrip().rstrip()),
+                        "aetfob": float(str(line[35 : (35 + 9)]).lstrip().rstrip()),
+                        "aenewt": float(str(line[44 : (44 + 11)]).lstrip().rstrip()),
+                        "aentun": str(line[55 : (55 + 5)]).lstrip().rstrip(),
+                        "aegrwt": float(str(line[60 : (60 + 11)]).lstrip().rstrip()),
+                        "aegwun": str(line[71 : (71 + 5)]).lstrip().rstrip(),
+                        "aeypat": str(line[76 : (76 + 25)]).lstrip().rstrip(),
+                        "aeedes": str(
+                            self.__checknamepart(
+                                factory, self.__repartname(line[101 : (101 + 25)])
+                            )
+                        ),
+                        "aetdes": str(
+                            self.__checknamepart(
+                                factory, self.__repartname(line[101 : (101 + 25)])
+                            )
+                        ),
+                        "aetarf": float(str(line[151 : (151 + 10)]).lstrip().rstrip()),
+                        "aestat": float(str(line[161 : (161 + 10)]).lstrip().rstrip()),
+                        "aebrnd": float(str(line[171 : (171 + 10)]).lstrip().rstrip()),
+                        "aertnt": float(str(line[181 : (181 + 5)]).lstrip().rstrip()),
+                        "aetrty": float(str(line[186 : (186 + 5)]).lstrip().rstrip()),
+                        "aesppm": float(str(line[191 : (191 + 5)]).lstrip().rstrip()),
+                        "aeqty1": float(str(line[196 : (196 + 9)]).lstrip().rstrip()),
+                        "aeqty2": float(str(line[205 : (205 + 9)]).lstrip().rstrip()),
+                        "aeuntp": float(str(line[214 : (214 + 9)]).lstrip().rstrip()),
+                        "aeamot": float(str(line[223 : (223 + 11)]).lstrip().rstrip()),
+                        "plnctn": float(str(line[26 : (26 + 9)]).lstrip().rstrip()),
+                        "plnqty": float(str(line[196 : (196 + 9)]).lstrip().rstrip()),
+                        "minimum": 0,
+                        "maximum": 0,
+                        "picshelfbin": "PNON",
+                        "stkshelfbin": "SNON",
+                        "ovsshelfbin": "ONON",
+                        "picshelfbasicqty": 0,
+                        "outerpcs": 0,
+                        "allocateqty": 0,
+                        "sync": False,
+                        "uuid": uuidcode,
+                        "updatedon": datetime.now(),
+                    }
+                )
+            except Exception as ex:
+                print(ex)
+                pass
+
+        return docs
+    
+    @staticmethod
+    def read_orderplan(self, filename):
+        from datetime import datetime
+        import uuid
+
+        f = open(filename, 'r', encoding='utf-8')
+        docs = []
+        for line in f:
+            fac = filename[filename.find('SPL') - 2:filename.find('SPL') - 1]
+            uuidcode = str(uuid.uuid4())
+            plantype = "ORDERPLAN"
+            cd = 20
+            unit = 'BOX'
+            sortg1 = 'PARTTYPE'
+            sortg2 = 'PARTNO'
+            sortg3 = ''
+            factory = "INJ"
+
+            if fac != '5':
+                factory = "AW"
+                plantype = "ORDERPLAN"
+                cd = 10
+                unit = 'COIL'
+                sortg1 = 'PONO'
+                sortg2 = 'PARTTYPE'
+                sortg3 = 'PARTNO'
+
+            oqty = str(self.__trimtxt(line[89:(89 + 9)]))
+            if oqty == "":
+                oqty = 0
+
+            try:
+                docs.append({
+                    'vendor': factory,
+                    'cd': cd,
+                    'unit': unit,
+                    'whs': factory,
+                    'tagrp': 'C',
+                    'factory': factory,
+                    "sortg1": sortg1,
+                    "sortg2": sortg2,
+                    "sortg3": sortg3,
+                    "plantype": plantype,
+                    "orderid": str(self.__trimtxt(line[13:(13 + 15)])),
+                    # remove space
+                    "pono": str(self.__returnutfpono(self, line[13:(13 + 15)])),
+                    "recid": str(self.__trimtxt(line[0:4])),
+                    "biac": str(self.__trimtxt(line[5:(5 + 8)])),
+                    "shiptype": str(self.__trimtxt(line[4:(4 + 1)])),
+                    "etdtap": datetime.strptime(str(self.__trimtxt(line[28:(28 + 8)])), '%Y%m%d'),
+                    "partno": str(self.__trimtxt(line[36:(36 + 25)])),
+                    "partname": str(self.__checknamepart(factory, self.__returnutfpono(self, line[61:(61 + 25)]))),
+                    "pc": str(self.__trimtxt(line[86:(86 + 1)])),
+                    "commercial": str(self.__trimtxt(line[87:(87 + 1)])),
+                    "sampleflg": str(self.__trimtxt(line[88:(88 + 1)])),
+                    "orderorgi": int(oqty),
+                    "orderround": int(str(self.__trimtxt(line[98:(98 + 9)]))),
+                    "firmflg": str(self.__trimtxt(line[107:(107 + 1)])),
+                    "shippedflg": str(self.__trimtxt(line[108:(108 + 1)])),
+                    "shippedqty": float(str(self.__trimtxt(line[109:(109 + 9)]))),
+                    "ordermonth": datetime.strptime(str(self.__trimtxt(line[118:(118 + 8)])), '%Y%m%d'),
+                    "balqty": float(str(self.__trimtxt(line[126:(126 + 9)]))),
+                    "bidrfl": str(self.__trimtxt(line[135:(135 + 1)])),
+                    "deleteflg": str(self.__trimtxt(line[136:(136 + 1)])),
+                    "ordertype": str(self.__trimtxt(line[137:(137 + 1)])),
+                    "reasoncd": str(self.__trimtxt(line[138:(138 + 3)])),
+                    "upddte": datetime.strptime(str(self.__trimtxt(line[141:(141 + 14)])), '%Y%m%d%H%M%S'),
+                    "updtime": datetime.strptime(str(self.__trimtxt(line[141:(141 + 14)])), '%Y%m%d%H%M%S'),
+                    "carriercode": str(self.__trimtxt(line[155:(155 + 4)])),
+                    "bioabt": int(str(self.__trimtxt(line[159:(159 + 1)]))),
+                    "bicomd": str(self.__trimtxt(line[160:(160 + 1)])),
+                    "bistdp": float(str(self.__trimtxt(line[165:(165 + 9)]))),
+                    "binewt": float(str(self.__trimtxt(line[174:(174 + 9)]))),
+                    "bigrwt": float(str(self.__trimtxt(line[183:(183 + 9)]))),
+                    "bishpc": str(self.__trimtxt(line[192:(192 + 8)])),
+                    "biivpx": str(self.__trimtxt(line[200:(200 + 2)])),
+                    "bisafn": str(self.__trimtxt(line[202:(202 + 6)])),
+                    "biwidt": float(str(self.__trimtxt(line[212:(212 + 4)]))),
+                    "bihigh": float(str(self.__trimtxt(line[216:(216 + 4)]))),
+                    "bileng": float(str(self.__trimtxt(line[208:(208 + 4)]))),
+                    "lotno": str(self.__trimtxt(line[220:(220 + 8)])),
+                    "minimum": 0,
+                    "maximum": 0,
+                    "picshelfbin": "PNON",
+                    "stkshelfbin": "SNON",
+                    "ovsshelfbin": "ONON",
+                    "picshelfbasicqty": 0,
+                    "outerpcs": 0,
+                    "allocateqty": 0,
+                    "sync": False,
+                    "uuid": uuidcode,
+                    "updatedon": datetime.strptime(str(self.__trimtxt(line[141:(141 + 14)])), '%Y%m%d%H%M%S')
+                })
+            except Exception as ex:
+                print(ex)
+                pass
+
+        # print(f"found orderplan: {len(docs)}")
+        return docs
+
+    def read_batch_file(self, typename, filetype, filename):
+        doc = []
+        if typename == "CK":
+            if filetype == "RECEIVE":
+                doc = self.read_receive(self, filename)
+                
+            else:
+                doc = self.read_orderplan(self, filename)
+
+        else:
+            print("unknow")
         return doc
