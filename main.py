@@ -178,22 +178,18 @@ def read():
 
                 ### commit the transaction
                 __oracon.commit()
+                if __oracur:
+                    __oracur.close()
+
+                if __oracon:
+                    __oracon.close()
+
                 print(f"{i} ==> update download file {r[5]} set symc := 1")
 
         except Exception as ex:
             print(f"error => {ex}")
             ### rollback the transaction
-            __oracon.rollback()
             cur.execute(f"update gedi_files set download='0' where id='{r[0]}'")
-            pass
-
-        finally:
-            if __oracur:
-                __oracur.close()
-
-            if __oracon:
-                __oracon.close()
-
             pass
 
         i += 1
