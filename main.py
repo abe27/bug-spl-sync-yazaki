@@ -1,5 +1,4 @@
 import pathlib
-import os
 import sys
 import sqlite3
 import nanoid
@@ -20,6 +19,8 @@ print(db_name)
 
 
 def read():
+    import os
+
     conn = sqlite3.connect(db_name)
     cur = conn.cursor()
     cur.execute("""select * from gedi_files where download=0 order by id""")
