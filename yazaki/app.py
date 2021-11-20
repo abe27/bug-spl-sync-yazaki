@@ -522,100 +522,117 @@ class Yazaki:
                 pass
 
         return docs
-    
+
     @staticmethod
     def read_orderplan(self, filename):
         from datetime import datetime
         import uuid
 
-        f = open(filename, 'r', encoding='utf-8')
+        f = open(filename, "r", encoding="utf-8")
         docs = []
         for line in f:
-            fac = filename[filename.find('SPL') - 2:filename.find('SPL') - 1]
+            fac = filename[filename.find("SPL") - 2 : filename.find("SPL") - 1]
             uuidcode = str(uuid.uuid4())
             plantype = "ORDERPLAN"
             cd = 20
-            unit = 'BOX'
-            sortg1 = 'PARTTYPE'
-            sortg2 = 'PARTNO'
-            sortg3 = ''
+            unit = "BOX"
+            sortg1 = "PARTTYPE"
+            sortg2 = "PARTNO"
+            sortg3 = ""
             factory = "INJ"
 
-            if fac != '5':
+            if fac != "5":
                 factory = "AW"
                 plantype = "ORDERPLAN"
                 cd = 10
-                unit = 'COIL'
-                sortg1 = 'PONO'
-                sortg2 = 'PARTTYPE'
-                sortg3 = 'PARTNO'
+                unit = "COIL"
+                sortg1 = "PONO"
+                sortg2 = "PARTTYPE"
+                sortg3 = "PARTNO"
 
-            oqty = str(self.__trimtxt(line[89:(89 + 9)]))
+            oqty = str(self.__trimtxt(line[89 : (89 + 9)]))
             if oqty == "":
                 oqty = 0
 
             try:
-                docs.append({
-                    'vendor': factory,
-                    'cd': cd,
-                    'unit': unit,
-                    'whs': factory,
-                    'tagrp': 'C',
-                    'factory': factory,
-                    "sortg1": sortg1,
-                    "sortg2": sortg2,
-                    "sortg3": sortg3,
-                    "plantype": plantype,
-                    "orderid": str(self.__trimtxt(line[13:(13 + 15)])),
-                    # remove space
-                    "pono": str(self.__returnutfpono(self, line[13:(13 + 15)])),
-                    "recid": str(self.__trimtxt(line[0:4])),
-                    "biac": str(self.__trimtxt(line[5:(5 + 8)])),
-                    "shiptype": str(self.__trimtxt(line[4:(4 + 1)])),
-                    "etdtap": datetime.strptime(str(self.__trimtxt(line[28:(28 + 8)])), '%Y%m%d'),
-                    "partno": str(self.__trimtxt(line[36:(36 + 25)])),
-                    "partname": str(self.__checknamepart(factory, self.__returnutfpono(self, line[61:(61 + 25)]))),
-                    "pc": str(self.__trimtxt(line[86:(86 + 1)])),
-                    "commercial": str(self.__trimtxt(line[87:(87 + 1)])),
-                    "sampleflg": str(self.__trimtxt(line[88:(88 + 1)])),
-                    "orderorgi": int(oqty),
-                    "orderround": int(str(self.__trimtxt(line[98:(98 + 9)]))),
-                    "firmflg": str(self.__trimtxt(line[107:(107 + 1)])),
-                    "shippedflg": str(self.__trimtxt(line[108:(108 + 1)])),
-                    "shippedqty": float(str(self.__trimtxt(line[109:(109 + 9)]))),
-                    "ordermonth": datetime.strptime(str(self.__trimtxt(line[118:(118 + 8)])), '%Y%m%d'),
-                    "balqty": float(str(self.__trimtxt(line[126:(126 + 9)]))),
-                    "bidrfl": str(self.__trimtxt(line[135:(135 + 1)])),
-                    "deleteflg": str(self.__trimtxt(line[136:(136 + 1)])),
-                    "ordertype": str(self.__trimtxt(line[137:(137 + 1)])),
-                    "reasoncd": str(self.__trimtxt(line[138:(138 + 3)])),
-                    "upddte": datetime.strptime(str(self.__trimtxt(line[141:(141 + 14)])), '%Y%m%d%H%M%S'),
-                    "updtime": datetime.strptime(str(self.__trimtxt(line[141:(141 + 14)])), '%Y%m%d%H%M%S'),
-                    "carriercode": str(self.__trimtxt(line[155:(155 + 4)])),
-                    "bioabt": int(str(self.__trimtxt(line[159:(159 + 1)]))),
-                    "bicomd": str(self.__trimtxt(line[160:(160 + 1)])),
-                    "bistdp": float(str(self.__trimtxt(line[165:(165 + 9)]))),
-                    "binewt": float(str(self.__trimtxt(line[174:(174 + 9)]))),
-                    "bigrwt": float(str(self.__trimtxt(line[183:(183 + 9)]))),
-                    "bishpc": str(self.__trimtxt(line[192:(192 + 8)])),
-                    "biivpx": str(self.__trimtxt(line[200:(200 + 2)])),
-                    "bisafn": str(self.__trimtxt(line[202:(202 + 6)])),
-                    "biwidt": float(str(self.__trimtxt(line[212:(212 + 4)]))),
-                    "bihigh": float(str(self.__trimtxt(line[216:(216 + 4)]))),
-                    "bileng": float(str(self.__trimtxt(line[208:(208 + 4)]))),
-                    "lotno": str(self.__trimtxt(line[220:(220 + 8)])),
-                    "minimum": 0,
-                    "maximum": 0,
-                    "picshelfbin": "PNON",
-                    "stkshelfbin": "SNON",
-                    "ovsshelfbin": "ONON",
-                    "picshelfbasicqty": 0,
-                    "outerpcs": 0,
-                    "allocateqty": 0,
-                    "sync": False,
-                    "uuid": uuidcode,
-                    "updatedon": datetime.strptime(str(self.__trimtxt(line[141:(141 + 14)])), '%Y%m%d%H%M%S')
-                })
+                docs.append(
+                    {
+                        "vendor": factory,
+                        "cd": cd,
+                        "unit": unit,
+                        "whs": factory,
+                        "tagrp": "C",
+                        "factory": factory,
+                        "sortg1": sortg1,
+                        "sortg2": sortg2,
+                        "sortg3": sortg3,
+                        "plantype": plantype,
+                        "orderid": str(self.__trimtxt(line[13 : (13 + 15)])),
+                        # remove space
+                        "pono": str(self.__returnutfpono(self, line[13 : (13 + 15)])),
+                        "recid": str(self.__trimtxt(line[0:4])),
+                        "biac": str(self.__trimtxt(line[5 : (5 + 8)])),
+                        "shiptype": str(self.__trimtxt(line[4 : (4 + 1)])),
+                        "etdtap": datetime.strptime(
+                            str(self.__trimtxt(line[28 : (28 + 8)])), "%Y%m%d"
+                        ),
+                        "partno": str(self.__trimtxt(line[36 : (36 + 25)])),
+                        "partname": str(
+                            self.__checknamepart(
+                                factory,
+                                self.__returnutfpono(self, line[61 : (61 + 25)]),
+                            )
+                        ),
+                        "pc": str(self.__trimtxt(line[86 : (86 + 1)])),
+                        "commercial": str(self.__trimtxt(line[87 : (87 + 1)])),
+                        "sampleflg": str(self.__trimtxt(line[88 : (88 + 1)])),
+                        "orderorgi": int(oqty),
+                        "orderround": int(str(self.__trimtxt(line[98 : (98 + 9)]))),
+                        "firmflg": str(self.__trimtxt(line[107 : (107 + 1)])),
+                        "shippedflg": str(self.__trimtxt(line[108 : (108 + 1)])),
+                        "shippedqty": float(str(self.__trimtxt(line[109 : (109 + 9)]))),
+                        "ordermonth": datetime.strptime(
+                            str(self.__trimtxt(line[118 : (118 + 8)])), "%Y%m%d"
+                        ),
+                        "balqty": float(str(self.__trimtxt(line[126 : (126 + 9)]))),
+                        "bidrfl": str(self.__trimtxt(line[135 : (135 + 1)])),
+                        "deleteflg": str(self.__trimtxt(line[136 : (136 + 1)])),
+                        "ordertype": str(self.__trimtxt(line[137 : (137 + 1)])),
+                        "reasoncd": str(self.__trimtxt(line[138 : (138 + 3)])),
+                        "upddte": datetime.strptime(
+                            str(self.__trimtxt(line[141 : (141 + 14)])), "%Y%m%d%H%M%S"
+                        ),
+                        "updtime": datetime.strptime(
+                            str(self.__trimtxt(line[141 : (141 + 14)])), "%Y%m%d%H%M%S"
+                        ),
+                        "carriercode": str(self.__trimtxt(line[155 : (155 + 4)])),
+                        "bioabt": int(str(self.__trimtxt(line[159 : (159 + 1)]))),
+                        "bicomd": str(self.__trimtxt(line[160 : (160 + 1)])),
+                        "bistdp": float(str(self.__trimtxt(line[165 : (165 + 9)]))),
+                        "binewt": float(str(self.__trimtxt(line[174 : (174 + 9)]))),
+                        "bigrwt": float(str(self.__trimtxt(line[183 : (183 + 9)]))),
+                        "bishpc": str(self.__trimtxt(line[192 : (192 + 8)])),
+                        "biivpx": str(self.__trimtxt(line[200 : (200 + 2)])),
+                        "bisafn": str(self.__trimtxt(line[202 : (202 + 6)])),
+                        "biwidt": float(str(self.__trimtxt(line[212 : (212 + 4)]))),
+                        "bihigh": float(str(self.__trimtxt(line[216 : (216 + 4)]))),
+                        "bileng": float(str(self.__trimtxt(line[208 : (208 + 4)]))),
+                        "lotno": str(self.__trimtxt(line[220 : (220 + 8)])),
+                        "minimum": 0,
+                        "maximum": 0,
+                        "picshelfbin": "PNON",
+                        "stkshelfbin": "SNON",
+                        "ovsshelfbin": "ONON",
+                        "picshelfbasicqty": 0,
+                        "outerpcs": 0,
+                        "allocateqty": 0,
+                        "sync": False,
+                        "uuid": uuidcode,
+                        "updatedon": datetime.strptime(
+                            str(self.__trimtxt(line[141 : (141 + 14)])), "%Y%m%d%H%M%S"
+                        ),
+                    }
+                )
             except Exception as ex:
                 print(ex)
                 pass
@@ -628,10 +645,33 @@ class Yazaki:
         if typename == "CK":
             if filetype == "RECEIVE":
                 doc = self.read_receive(self, filename)
-                
+
             else:
                 doc = self.read_orderplan(self, filename)
 
         else:
             print("unknow")
         return doc
+
+    def line_notification(self, msg):
+        import requests
+        import os
+
+        url = "https://notify-api.line.me/api/notify"
+        payload = f"message={msg}"
+        headers = {
+            "Authorization": f"Bearer {os.getenv('LINE_NOTIFICATION_TOKEN')}",
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+
+        # BugDWScwhYvjVc5EyRi5sa28LmJxE2G5NIJsrs6vEV7
+
+        response = requests.request(
+            "POST", url, headers=headers, data=payload.encode("utf-8")
+        )
+
+        print(f"line status => {response}")
+        if response.status_code == 200:
+            return True
+
+        return False
