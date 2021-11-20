@@ -16,6 +16,7 @@ load_dotenv(env_path)
 
 y = Yazaki()
 db_name = f"{app_path}/data/sync.db"
+print(db_name)
 
 
 def read():
