@@ -1,3 +1,6 @@
+import os
+
+
 class ObjectLink(object):
     def __init__(
         self,
@@ -101,7 +104,7 @@ class Logging:
 
 class Yazaki:
     def __init__(self):
-        # import os, 
+        # import os,
         import datetime
         import random
         from sty import fg, ef, rs
@@ -361,7 +364,7 @@ class Yazaki:
         return obj
 
     def get_gedi(self):
-        # import os, 
+        # import os,
         import time
 
         cookies = self.__login()
