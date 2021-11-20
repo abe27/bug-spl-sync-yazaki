@@ -101,7 +101,9 @@ class Logging:
 
 class Yazaki:
     def __init__(self):
-        # import os, datetime, random
+        # import os, 
+        import datetime
+        import random
         from sty import fg, ef, rs
         from sty import RgbFg, Style
 
@@ -359,7 +361,8 @@ class Yazaki:
         return obj
 
     def get_gedi(self):
-        # import os, time
+        # import os, 
+        import time
 
         cookies = self.__login()
         if cookies is False:
