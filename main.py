@@ -14,13 +14,12 @@ app_path = f"{pathlib.Path().absolute()}"
 env_path = f"{app_path}/.env"
 load_dotenv(env_path)
 
-print(os.getenv('DB_LITE_NAME'))
-
 y = Yazaki()
-conn = sqlite3.connect(f"data/{os.getenv('DB_LITE_NAME')}.db")
+db_name = f"data/sync.db"
 
 
 def read():
+    conn = sqlite3.connect(db_name)
     cur = conn.cursor()
     cur.execute("""select * from gedi_files where download=0 order by id""")
     obj = cur.fetchall()
@@ -205,6 +204,7 @@ def read():
 
 
 def main():
+    conn = sqlite3.connect(db_name)
     try:
         cur = conn.cursor()
         # Create table
@@ -246,10 +246,13 @@ def main():
             return
 
         print("error load")
+        conn.close()
 
     except Exception as e:
         print(e)
+        conn.rollback()
         conn.close()
+        pass
 
 
 if __name__ == "__main__":
