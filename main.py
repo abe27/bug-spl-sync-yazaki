@@ -1,4 +1,5 @@
 import pathlib
+import os
 import sys
 import sqlite3
 import nanoid
@@ -15,8 +16,6 @@ load_dotenv(env_path)
 
 y = Yazaki()
 db_name = f"data/sync.db"
-
-import os
 
 
 def read():
