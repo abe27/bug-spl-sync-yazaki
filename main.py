@@ -6,7 +6,7 @@ import nanoid
 import time
 import datetime
 import cx_Oracle
-from yazaki.app import Yazaki
+from yazaki.app import Yazaki, Logging
 
 from dotenv import load_dotenv
 
@@ -121,6 +121,11 @@ def read():
                                 if pln != None:
                                     msg = f"""FACTORY: {_r['factory']}\nRECEIVENO: {_r['receiveno']}\nITEM: {_r['receivepln']} CTN: {pln[0]}\nAT: {d.strftime('%Y-%m-%d %H:%M:%S')}"""
                                     y.line_notification(msg)
+                                    Logging(
+                                        "sync",
+                                        "receive",
+                                        f"success: sync {_r['receiveno']} to ORADB.",
+                                    )
 
                                 x += 1
                         __upsert = True
@@ -171,6 +176,11 @@ def read():
                             __oracur.execute(sql)
                             x += 1
 
+                        Logging(
+                            "sync",
+                            "orderplan",
+                            f"success: sync {len(doc)} order to ORADB.",
+                        )
                         __upsert = True
 
                 if __upsert:
@@ -189,6 +199,7 @@ def read():
         except Exception as ex:
             print(f"error => {ex}")
             ### rollback the transaction
+            Logging("sync", "data", f"error: {ex}")
             cur.execute(f"update gedi_files set download='0' where id='{r[0]}'")
             pass
 
