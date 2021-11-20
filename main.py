@@ -14,6 +14,8 @@ app_path = f"{pathlib.Path().absolute()}"
 env_path = f"{app_path}/.env"
 load_dotenv(env_path)
 
+print(env_path)
+
 y = Yazaki()
 conn = sqlite3.connect(f"data/{os.getenv('DB_LITE_NAME')}.db")
 
