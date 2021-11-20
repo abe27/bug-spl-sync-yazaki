@@ -62,7 +62,7 @@ def read():
 
                         ### excute head
                         __oracur.execute(
-                            f"""DELETE FROM SKTSYS.TXP_RECTRANSBODY WHERE RECEIVINGKEY='{__rec_no}' AND RECCTN=0"""
+                            f"""DELETE FROM TXP_RECTRANSBODY WHERE RECEIVINGKEY='{__rec_no}' AND RECCTN=0"""
                         )
                         __oracur.execute(sql_insert_ent)
 
