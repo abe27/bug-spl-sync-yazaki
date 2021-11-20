@@ -12,7 +12,7 @@ class ObjectLink(object):
         orgname,
         download=False,
     ):
-        import os
+        # import os
         from datetime import datetime
 
         ordn = None
@@ -77,7 +77,7 @@ class ObjectLink(object):
 
 class Logging:
     def __init__(self, title, content, status):
-        import os
+        # import os
         from datetime import datetime
 
         filename = f'{datetime.now().strftime("%d_%m_%Y")}.log'
@@ -101,7 +101,7 @@ class Logging:
 
 class Yazaki:
     def __init__(self):
-        import os, datetime, random
+        # import os, datetime, random
         from sty import fg, ef, rs
         from sty import RgbFg, Style
 
@@ -164,7 +164,8 @@ class Yazaki:
     @staticmethod
     def __login():
         import sys
-        import os
+
+        # import os
         import urllib
         import urllib3
         import requests
@@ -210,7 +211,8 @@ class Yazaki:
     @staticmethod
     def __logout(session):
         import requests
-        import os
+
+        # import os
         from bs4 import BeautifulSoup
 
         url = f"https://{os.getenv('YAZAKI_HOST')}:{os.getenv('YAZAKI_PORT')}/cehttp/servlet/MailboxServlet?operation=LOGOFF"
@@ -245,7 +247,8 @@ class Yazaki:
         import requests
         from bs4 import BeautifulSoup
         from termcolor import colored
-        import os
+
+        # import os
 
         docs = False
         try:
@@ -292,7 +295,8 @@ class Yazaki:
             import requests
             from bs4 import BeautifulSoup
             from termcolor import colored
-            import os
+
+            # import os
 
             etd = str((datetime.datetime.now() - timedelta(days=7)).strftime("%Y%m%d"))
 
@@ -355,7 +359,7 @@ class Yazaki:
         return obj
 
     def get_gedi(self):
-        import os, time
+        # import os, time
 
         cookies = self.__login()
         if cookies is False:
@@ -655,7 +659,8 @@ class Yazaki:
 
     def line_notification(self, msg):
         import requests
-        import os
+
+        # import os
 
         url = "https://notify-api.line.me/api/notify"
         payload = f"message={msg}"
