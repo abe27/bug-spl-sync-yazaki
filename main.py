@@ -62,17 +62,16 @@ def read():
                             rec_check = __oracur.execute(
                                 f"select RECEIVINGKEY from TXP_RECTRANSENT where RECEIVINGKEY='{__rec_no}'"
                             )
-                            sql_insert_ent = f"""UPDATE TXP_RECTRANSENT SET RECEIVINGMAX='{len(doc)}',RECPLNCTN=0 WHERE RECEIVINGKEY='{__rec_no}'"""
+
                             if rec_check.fetchone() is None:
                                 sql_insert_ent = f"""INSERT INTO TXP_RECTRANSENT(RECEIVINGKEY, RECEIVINGMAX, RECEIVINGDTE, VENDOR, RECSTATUS, RECISSTYPE, RECPLNCTN,RECENDCTN, UPDDTE, SYSDTE)
                                 VALUES('{__rec_no}', {len(doc)}, to_date('{str(__rec_etd)[:10]}', 'YYYY-MM-DD'), '{__rec_tag}', 0, '01', 0,0, current_timestamp, current_timestamp)"""
-
+                                __oracur.execute(sql_insert_ent)
                             # ### excute head
                             # __oracur.execute(
                             #     f"""DELETE FROM TXP_RECTRANSBODY WHERE RECEIVINGKEY='{__rec_no}' AND RECCTN=0"""
                             # )
-
-                            __oracur.execute(sql_insert_ent)
+                            # __oracur.execute(sql_insert_ent)
                             ### check part
                             __part_sql = __oracur.execute(
                                 f"select partno from txp_part where partno='{p['partno']}'"
