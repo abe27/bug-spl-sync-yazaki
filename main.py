@@ -252,7 +252,8 @@ def main():
             # Save (commit) the changes
             conn.commit()
             conn.close()
-            return True
+
+        return True
 
     except Exception as e:
         print(e)
