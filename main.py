@@ -35,42 +35,44 @@ def read():
                 if r[1] == "CK":
                     __list_receive = []
                     plantype = doc[0]["plantype"]
-                    if plantype == "RECEIVE":
-                        __rec_etd = datetime.datetime.strptime(
-                            doc[0]["aetodt"], "%d/%m/%Y"
-                        )
-                        __rec_no = doc[0]["receivingkey"]
-                        __rec_tag = doc[0]["tagrp"]
-                        __list_receive.append(
-                            {
-                                "factory": doc[0]["factory"],
-                                "receiveno": __rec_no,
-                                "receivedte": __rec_etd,
-                                "receivepln": len(doc),
-                            }
-                        )
-
-                        ## check duplicate header
-                        rec_check = __oracur.execute(
-                            f"select RECEIVINGKEY from TXP_RECTRANSENT where RECEIVINGKEY='{__rec_no}'"
-                        )
-
-                        sql_insert_ent = f"""UPDATE TXP_RECTRANSENT SET RECEIVINGMAX='{len(doc)}',RECPLNCTN=0 WHERE RECEIVINGKEY='{__rec_no}'"""
-                        if rec_check.fetchone() is None:
-                            sql_insert_ent = f"""INSERT INTO TXP_RECTRANSENT(RECEIVINGKEY, RECEIVINGMAX, RECEIVINGDTE, VENDOR, RECSTATUS, RECISSTYPE, RECPLNCTN,RECENDCTN, UPDDTE, SYSDTE)
-                            VALUES('{__rec_no}', {len(doc)}, to_date('{str(__rec_etd)[:10]}', 'YYYY-MM-DD'), '{__rec_tag}', 0, '01', 0,0, current_timestamp, current_timestamp)"""
-
-                        ### excute head
-                        __oracur.execute(
-                            f"""DELETE FROM TXP_RECTRANSBODY WHERE RECEIVINGKEY='{__rec_no}' AND RECCTN=0"""
-                        )
-                        __oracur.execute(sql_insert_ent)
 
                     if plantype == "RECEIVE":
                         sumpln = 0
                         x = 0
                         while x < len(doc):
                             p = doc[x]
+
+                            __rec_etd = datetime.datetime.strptime(
+                                p["aetodt"], "%d/%m/%Y"
+                            )
+                            __rec_no = p["receivingkey"]
+                            __rec_tag = p["tagrp"]
+
+                            if __list_receive.find(p["receivingkey"]) < 0:
+                                __list_receive.append(
+                                    {
+                                        "factory": p["factory"],
+                                        "receiveno": __rec_no,
+                                        "receivedte": __rec_etd,
+                                        "receivepln": len(doc),
+                                    }
+                                )
+
+                            ## check duplicate header
+                            rec_check = __oracur.execute(
+                                f"select RECEIVINGKEY from TXP_RECTRANSENT where RECEIVINGKEY='{__rec_no}'"
+                            )
+                            sql_insert_ent = f"""UPDATE TXP_RECTRANSENT SET RECEIVINGMAX='{len(doc)}',RECPLNCTN=0 WHERE RECEIVINGKEY='{__rec_no}'"""
+                            if rec_check.fetchone() is None:
+                                sql_insert_ent = f"""INSERT INTO TXP_RECTRANSENT(RECEIVINGKEY, RECEIVINGMAX, RECEIVINGDTE, VENDOR, RECSTATUS, RECISSTYPE, RECPLNCTN,RECENDCTN, UPDDTE, SYSDTE)
+                                VALUES('{__rec_no}', {len(doc)}, to_date('{str(__rec_etd)[:10]}', 'YYYY-MM-DD'), '{__rec_tag}', 0, '01', 0,0, current_timestamp, current_timestamp)"""
+
+                            # ### excute head
+                            # __oracur.execute(
+                            #     f"""DELETE FROM TXP_RECTRANSBODY WHERE RECEIVINGKEY='{__rec_no}' AND RECCTN=0"""
+                            # )
+
+                            __oracur.execute(sql_insert_ent)
                             ### check part
                             __part_sql = __oracur.execute(
                                 f"select partno from txp_part where partno='{p['partno']}'"
