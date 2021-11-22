@@ -119,7 +119,7 @@ def read():
                                 pln = recbody.fetchone()
                                 d = datetime.datetime.now()
                                 if pln != None:
-                                    msg = f"""FACTORY: {_r['factory']}\nRECEIVENO: {_r['receiveno']}\nITEM: {_r['receivepln']} CTN: {pln[0]}\nAT: {d.strftime('%Y-%m-%d %H:%M:%S')}"""
+                                    msg = f"""{_r['factory']}\nRECEIVENO: {_r['receiveno']}\nITEM: {_r['receivepln']} CTN: {pln[0]}\nAT: {d.strftime('%Y-%m-%d %H:%M:%S')}"""
                                     y.line_notification(msg)
                                     Logging(
                                         "sync",

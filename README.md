@@ -1,1 +1,5 @@
-"# bug-spl-sync-yazaki" 
+"# bug-spl-sync-yazaki"
+
+### Run Api
+
+uvicorn test:app --reload
