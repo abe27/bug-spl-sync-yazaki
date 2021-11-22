@@ -211,31 +211,32 @@ def read():
 
 
 def main():
-    conn = sqlite3.connect(db_name)
     try:
-        cur = conn.cursor()
-        # Create table
-        cur.execute(
-            """create table if not exists gedi_files (
-                id	integer primary key autoincrement,
-                objtype	text not null,
-                mailbox	text not null,
-                batchid	text not null unique,
-                size	real,
-                batchfile	text,
-                currentdate	numeric,
-                flags	text,
-                formats	text,
-                orgname	text,
-                factory	text,
-                filetype	text,
-                download	integer,
-                destination text,
-                linkfile	text)"""
-        )
-        conn.commit()
         doc = y.get_gedi()
         if doc != False:
+            conn = sqlite3.connect(db_name)
+            cur = conn.cursor()
+            # Create table
+            cur.execute(
+                """create table if not exists gedi_files (
+                    id	integer primary key autoincrement,
+                    objtype	text not null,
+                    mailbox	text not null,
+                    batchid	text not null unique,
+                    size	real,
+                    batchfile	text,
+                    currentdate	numeric,
+                    flags	text,
+                    formats	text,
+                    orgname	text,
+                    factory	text,
+                    filetype	text,
+                    download	integer,
+                    destination text,
+                    linkfile	text)"""
+            )
+            conn.commit()
+
             i = 0
             while i < len(doc):
                 r = doc[i]
@@ -250,10 +251,8 @@ def main():
 
             # Save (commit) the changes
             conn.commit()
-            return
-
-        print("error load")
-        conn.close()
+            conn.close()
+            return True
 
     except Exception as e:
         print(e)
@@ -261,10 +260,13 @@ def main():
         conn.close()
         pass
 
+    return False
+
 
 if __name__ == "__main__":
-    main()
-    ### after get gedi file
-    time.sleep(1)
-    read()
+    if main():
+        ### after get gedi file
+        time.sleep(1)
+        read()
+
     sys.exit(0)
