@@ -47,8 +47,8 @@ def read():
                             )
                             __rec_no = p["receivingkey"]
                             __rec_tag = p["tagrp"]
-
-                            if __list_receive.find(p["receivingkey"]) < 0:
+                            n = [item for item in __list_receive if item["receiveno"] == str(__rec_no)]
+                            if len(n) == 0:
                                 __list_receive.append(
                                     {
                                         "factory": p["factory"],
