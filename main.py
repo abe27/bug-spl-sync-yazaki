@@ -46,8 +46,12 @@ def read():
                                 p["aetodt"], "%d/%m/%Y"
                             )
                             __rec_no = p["receivingkey"]
-                            __rec_tag = p["tagrp"]
-                            n = [item for item in __list_receive if item["receiveno"] == str(__rec_no)]
+                            __rec_tag = p["factory"]  ##p["tagrp"]
+                            n = [
+                                item
+                                for item in __list_receive
+                                if item["receiveno"] == str(__rec_no)
+                            ]
                             if len(n) == 0:
                                 __list_receive.append(
                                     {
