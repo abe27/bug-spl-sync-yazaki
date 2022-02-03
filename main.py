@@ -270,9 +270,8 @@ def main():
 
 
 if __name__ == "__main__":
-    if main():
-        ### after get gedi file
-        time.sleep(1)
-        read()
+    main()
+    time.sleep(1)
+    read()
 
     sys.exit(0)

@@ -7,11 +7,11 @@
 import datetime
 import pathlib
 from yazaki.app import ObjectLink
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 
-# app_path = f"{pathlib.Path().absolute()}"
-# env_path = f"{app_path}/.env"
-# load_dotenv(env_path)
+app_path = f"{pathlib.Path().absolute()}"
+env_path = f"{app_path}/.env"
+load_dotenv(env_path)
 
 def return_sql(r):
     timestamp = datetime.datetime.timestamp(r.currentdate)
