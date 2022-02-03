@@ -21,7 +21,7 @@ db_name = f"{app_path}/data/sync.db"
 def read():
     conn = sqlite3.connect(db_name)
     cur = conn.cursor()
-    cur.execute("""select * from gedi_files where download=0 order by id""")
+    cur.execute("""select * from gedi_files where download=0 order by batchfile""")
     obj = cur.fetchall()
     i = 0
     while i < len(obj):
