@@ -103,11 +103,10 @@ def read():
                                     (RECEIVINGKEY, RECEIVINGSEQ, PARTNO, PLNQTY, PLNCTN,RECQTY,RECCTN,TAGRP, UNIT, CD, WHS, DESCRI, RVMANAGINGNO,UPDDTE, SYSDTE, CREATEDBY,MODIFIEDBY,OLDERKEY)
                                     VALUES('{__rec_no}', '{(x + 1)}', '{p['partno']}', {p['plnqty']}, {p['plnctn']},0,0,'C', '{p['unit']}','20' , '{__rec_tag}','{__part_desc}', '{rvno[0]}',sysdate, sysdate, 'SKTSYS', 'SKTSYS', '{__rec_no}')"""
                                 
-                                __oracur.execute(sql_body)
-
                                 print(f"{__rec_no} insert partno: {p['partno']}")
                                 print(sql_body)
                                 print("********************************************")
+                                __oracur.execute(sql_body)
 
                             sumpln = +int(p["plnctn"])
                             __oracur.execute(
