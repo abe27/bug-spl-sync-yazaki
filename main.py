@@ -271,10 +271,32 @@ def main():
 
     return False
 
+def update_received():
+    sql = f"""SELECT t.RECEIVINGKEY,count(t.RECEIVINGKEY) seq, sum(t.PLNCTN) ctn  FROM TXP_RECTRANSBODY t 
+            INNER JOIN TXP_RECTRANSENT e ON t.RECEIVINGKEY = e.RECEIVINGKEY  
+            WHERE TO_CHAR(e.RECEIVINGDTE, 'YYYYMMDD')  = TO_CHAR(sysdate, 'YYYYMMDD') 
+            GROUP BY t.RECEIVINGKEY"""
+    __oracon = cx_Oracle.connect(user="expsys",password="expsys",dsn="192.168.101.215/RMW")
+    __oracur = __oracon.cursor()
+    rec = __oracur.execute(sql)
+    data = rec.fetchall()
+    for i in data:
+        # print(i[0])
+        # print(i[1])
+        # print(i[2])
+        __oracur.execute(f"UPDATE TXP_RECTRANSENT SET RECEIVINGMAX='{i[1]}',RECPLNCTN={i[2]} WHERE RECEIVINGKEY='{i[0]}'")
+    
+    ### commit the transaction
+    __oracon.commit()
+    if __oracur:
+        __oracur.close()
+    if __oracon:
+        __oracon.close()
 
 if __name__ == "__main__":
     main()
     time.sleep(1)
     read()
-
+    time.sleep(1)
+    update_received()
     sys.exit(0)
