@@ -37,7 +37,7 @@ def read():
                     plantype = doc[0]["plantype"]
 
                     if plantype == "RECEIVE":
-                        sumpln = 0
+                        # sumpln = 0
                         x = 0
                         while x < len(doc):
                             p = doc[x]
@@ -108,9 +108,11 @@ def read():
                                 # print("********************************************")
                                 __oracur.execute(sql_body)
 
-                            sumpln = +int(p["plnctn"])
+                            count_seq = __oracur.execute(f"SELECT sum(PLNCTN) ctn from TXP_RECTRANSBODY WHERE RECEIVINGKEY='{p['receivingkey']}'")
+                            __ctn = count_seq.fetchone()
+                            # sumpln =+ int(p["plnctn"])
                             __oracur.execute(
-                                f"""UPDATE TXP_RECTRANSENT SET RECEIVINGMAX='{len(doc)}',RECPLNCTN={sumpln} WHERE RECEIVINGKEY='{__rec_no}'"""
+                                f"""UPDATE TXP_RECTRANSENT SET RECEIVINGMAX='{__ctn[0]}',RECPLNCTN={__ctn[1]} WHERE RECEIVINGKEY='{__rec_no}'"""
                             )
                             
                             print(f"********************* END {__rec_no} ***********************")
